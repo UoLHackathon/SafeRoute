@@ -1,7 +1,13 @@
 "use client";
 
 import type { SafeStop } from "@/types";
-import { SAFE_STOP_ICONS } from "@/lib/mapbox";
+
+const SAFE_STOP_ICONS: Record<string, string> = {
+  pharmacy: "💊",
+  hospital: "🏥",
+  police: "🚔",
+  late_open_shop: "🏪",
+};
 
 interface SafeStopsLayerProps {
   stops: SafeStop[];

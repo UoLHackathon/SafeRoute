@@ -1,17 +1,13 @@
 "use client";
 
-import { useState, useCallback, useEffect } from "react";
-import dynamic from "next/dynamic";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import RouteSelector from "@/components/RouteSelector";
 import IncidentReportForm from "@/components/IncidentReportForm";
 import SafeStopsLayer from "@/components/SafeStopsLayer";
 import RiskLegend from "@/components/RiskLegend";
-import { fetchRoutes, fetchSafeStops, fetchReports, fetchHeatmapData } from "@/lib/api";
-import type { RouteOption, IncidentReport, SafeStop, HeatmapPoint } from "@/types";
-
-// Mapbox relies on `window` — lazy-load with SSR disabled
-const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
+import { fetchRoutes, fetchSafeStops, fetchReports, geocode } from "@/lib/api";
+import type { RouteOption, IncidentReport, SafeStop } from "@/types";
 
 export default function HomePage() {
   // ── Map state ──────────────────────────────────────────────────────────
@@ -31,30 +27,21 @@ export default function HomePage() {
   // ── Safe stops ─────────────────────────────────────────────────────────
   const [safeStops, setSafeStops] = useState<SafeStop[]>([]);
 
-  // ── Heatmap ────────────────────────────────────────────────────────────
+  // ── Heatmap toggle ─────────────────────────────────────────────────────
   const [showHeatmap, setShowHeatmap] = useState(false);
-  const [heatmapData, setHeatmapData] = useState<HeatmapPoint[]>([]);
 
   // ── Get user's current position on mount ───────────────────────────────
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
       (pos) => setUserLocation([pos.coords.longitude, pos.coords.latitude]),
-      () => {
-        /* fallback: default center handled by MapView */
-      }
+      () => { /* fallback */ }
     );
   }, []);
 
-  // ── Geocode destination via Mapbox ─────────────────────────────────────
-  async function geocode(query: string): Promise<[number, number] | null> {
-    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
-    const res = await fetch(
-      `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?access_token=${token}&limit=1`
-    );
-    const data = await res.json();
-    const coords = data.features?.[0]?.center;
-    return coords ? [coords[1], coords[0]] : null; // [lat, lng]
-  }
+  // ── Load incidents on mount ────────────────────────────────────────────
+  useEffect(() => {
+    fetchReports().then(setIncidents).catch(() => {});
+  }, []);
 
   // ── Request routes from backend ────────────────────────────────────────
   async function handleSearch() {
@@ -85,25 +72,6 @@ export default function HomePage() {
     }
   }
 
-  // ── Bounds change → load heatmap + incidents ───────────────────────────
-  const handleBoundsChange = useCallback(
-    (bounds: { north: number; south: number; east: number; west: number }) => {
-      fetchReports(bounds).then(setIncidents).catch(() => {});
-
-      if (showHeatmap) {
-        fetchHeatmapData(bounds).then(setHeatmapData).catch(() => {});
-      }
-    },
-    [showHeatmap]
-  );
-
-  // ── Map click → set report coords ─────────────────────────────────────
-  function handleMapClick(lngLat: { lng: number; lat: number }) {
-    if (showReportForm) {
-      setReportCoords(lngLat);
-    }
-  }
-
   // ── Select route + load safe stops ─────────────────────────────────────
   function handleRouteSelect(type: string) {
     setSelectedRoute(type);
@@ -112,18 +80,10 @@ export default function HomePage() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black">
-      {/* ── Map ─────────────────────────────────────────────────────────── */}
-      <MapView
-        routes={routes}
-        incidents={incidents}
-        safeStops={safeStops}
-        heatmapData={heatmapData}
-        selectedRoute={selectedRoute}
-        showHeatmap={showHeatmap}
-        onMapClick={handleMapClick}
-        onBoundsChange={handleBoundsChange}
-        userLocation={userLocation}
-      />
+      {/* Map placeholder — map rendering is handled by the backend */}
+      <div className="absolute inset-0 bg-gray-950 flex items-center justify-center text-white/20 text-sm">
+        Map area — connect to backend map tile service
+      </div>
 
       {/* ── Search bar ──────────────────────────────────────────────────── */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-30 w-[90%] max-w-lg">

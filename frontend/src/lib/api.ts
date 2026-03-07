@@ -108,6 +108,21 @@ export function deleteContact(contactId: string): Promise<{ ok: boolean }> {
   });
 }
 
+// ── Geocode (via backend) ────────────────────────────────────────────────────
+
+export async function geocode(
+  query: string
+): Promise<[number, number] | null> {
+  try {
+    const data = await request<{ lat: number; lng: number }>(
+      `/geocode?query=${encodeURIComponent(query)}`
+    );
+    return [data.lat, data.lng];
+  } catch {
+    return null;
+  }
+}
+
 // ── Heatmap data ────────────────────────────────────────────────────────────
 
 export function fetchHeatmapData(

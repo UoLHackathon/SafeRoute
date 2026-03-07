@@ -3,11 +3,8 @@
 import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { startWalkSession, checkIn, endWalkSession } from "@/lib/api";
 import type { WalkSession } from "@/types";
-
-const MapView = dynamic(() => import("@/components/MapView"), { ssr: false });
 
 export default function WalkPage() {
   return (
@@ -132,8 +129,8 @@ function WalkContent() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black">
-      {/* Map tracking user */}
-      <MapView userLocation={userLocation} trackUser />
+      {/* Map placeholder — map rendering is handled by the backend */}
+      <div className="absolute inset-0 bg-gray-950" />
 
       {/* Top bar */}
       <div className="absolute top-4 left-4 right-4 z-30">
