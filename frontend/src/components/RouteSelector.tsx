@@ -1,7 +1,12 @@
 "use client";
 
 import type { RouteOption } from "@/types";
-import { ROUTE_COLORS } from "@/lib/mapbox";
+
+const ROUTE_COLORS: Record<string, string> = {
+  fastest: "#3B82F6",
+  lowerRisk: "#22C55E",
+  comfort: "#EAB308",
+};
 
 interface RouteSelectorProps {
   routes: RouteOption[];
