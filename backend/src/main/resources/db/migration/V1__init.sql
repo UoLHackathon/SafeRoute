@@ -26,7 +26,7 @@ CREATE TABLE safe_stop (
   longitude DOUBLE PRECISION NOT NULL,
   opens_at TIME,
   closes_at TIME,
-  is24_hours BOOLEAN NOT NULL DEFAULT false
+  is_24_hours BOOLEAN NOT NULL DEFAULT false
 );
 
 CREATE INDEX idx_safe_stop_location ON safe_stop (latitude, longitude);
