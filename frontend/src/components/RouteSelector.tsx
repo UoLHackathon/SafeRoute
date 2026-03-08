@@ -3,38 +3,38 @@
 import type { RouteOption } from "@/types";
 
 const ROUTE_COLORS: Record<string, string> = {
-  fastest: "#3B82F6",
-  lowerRisk: "#22C55E",
-  comfort: "#EAB308",
+  FASTEST: "#3B82F6",
+  LOWER_RISK: "#22C55E",
+  COMFORT: "#EAB308",
 };
 
 interface RouteSelectorProps {
   routes: RouteOption[];
   selectedRoute: string | undefined;
-  onSelect: (type: string) => void;
+  onSelect: (mode: string) => void;
   onStartWalk: (route: RouteOption) => void;
 }
 
 const ROUTE_LABELS: Record<string, string> = {
-  fastest: "Fastest Route",
-  lowerRisk: "Lower Risk",
-  comfort: "Comfort Route",
+  FASTEST: "Fastest Route",
+  LOWER_RISK: "Lower Risk",
+  COMFORT: "Comfort Route",
 };
 
 const ROUTE_DESCRIPTIONS: Record<string, string> = {
-  fastest: "Shortest travel time to destination",
-  lowerRisk: "Avoids higher‑risk areas based on safety data",
-  comfort: "Prioritises well‑lit, busier streets",
+  FASTEST: "Shortest travel time to destination",
+  LOWER_RISK: "Avoids higher-risk areas based on safety data",
+  COMFORT: "Prioritises well-lit, busier streets",
 };
 
 function riskBadge(score: number) {
-  if (score <= 0.3)
+  if (score <= 30)
     return (
       <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-500/20 text-green-400">
         Low
       </span>
     );
-  if (score <= 0.6)
+  if (score <= 60)
     return (
       <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-400">
         Medium
@@ -66,11 +66,12 @@ export default function RouteSelector({
 
         <div className="divide-y divide-white/5">
           {routes.map((route) => {
-            const isActive = selectedRoute === route.type;
+            const isActive = selectedRoute === route.mode;
+            const durationMin = Math.round(route.durationSeconds / 60);
             return (
               <button
-                key={route.type}
-                onClick={() => onSelect(route.type)}
+                key={route.mode}
+                onClick={() => onSelect(route.mode)}
                 className={`w-full text-left px-4 py-3 transition-colors ${
                   isActive
                     ? "bg-white/10"
@@ -79,31 +80,33 @@ export default function RouteSelector({
               >
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
-                    {/* Colour dot */}
                     <span
                       className="w-3 h-3 rounded-full shrink-0"
                       style={{
-                        backgroundColor: ROUTE_COLORS[route.type] ?? "#888",
+                        backgroundColor: ROUTE_COLORS[route.mode] ?? "#888",
                       }}
                     />
                     <span className="text-sm font-medium text-white">
-                      {ROUTE_LABELS[route.type] ?? route.type}
+                      {ROUTE_LABELS[route.mode] ?? route.mode}
                     </span>
                   </div>
                   {riskBadge(route.riskScore)}
                 </div>
 
                 <p className="text-xs text-white/50 mb-2 pl-5">
-                  {ROUTE_DESCRIPTIONS[route.type] ?? ""}
+                  {ROUTE_DESCRIPTIONS[route.mode] ?? ""}
                 </p>
 
                 <div className="flex items-center gap-4 pl-5 text-xs text-white/60">
-                  <span>🕐 {route.duration} min</span>
+                  <span>🕐 {durationMin} min</span>
                   <span>
                     Risk:{" "}
                     <span className="font-mono">
-                      {(route.riskScore * 100).toFixed(0)}%
+                      {route.riskScore.toFixed(0)}%
                     </span>
+                  </span>
+                  <span className="text-white/40">
+                    {route.confidence}
                   </span>
                 </div>
 

@@ -1,15 +1,20 @@
-// ── Route types ──────────────────────────────────────────────────────────────
 
-export type RouteType = "fastest" | "lowerRisk" | "comfort";
+export type RouteMode = "FASTEST" | "LOWER_RISK" | "COMFORT";
 
-export interface RouteOption {
-  type: RouteType;
-  duration: number; // minutes
-  riskScore: number; // 0‒1
-  geometry: [number, number][]; // [lng, lat] pairs
+export interface Coordinate {
+  lat: number;
+  lng: number;
 }
 
-// ── Incident / Report types ─────────────────────────────────────────────────
+export interface RouteOption {
+  mode: RouteMode;
+  distanceMeters: number;
+  durationSeconds: number;
+  riskScore: number;
+  confidence: string;
+  reasons: string[];
+  path: Coordinate[];
+}
 
 export type IncidentType =
   | "harassment"
@@ -26,8 +31,6 @@ export interface IncidentReport {
   description: string;
 }
 
-// ── Safe‑stop types ─────────────────────────────────────────────────────────
-
 export type SafeStopCategory =
   | "pharmacy"
   | "hospital"
@@ -42,18 +45,14 @@ export interface SafeStop {
   longitude: number;
 }
 
-// ── Walk session ────────────────────────────────────────────────────────────
-
 export interface WalkSession {
   id: string;
-  routeType: RouteType;
+  routeMode: RouteMode;
   startTime: string;
   expectedArrival: string;
   isActive: boolean;
   lastCheckIn?: string;
 }
-
-// ── Trusted contact ─────────────────────────────────────────────────────────
 
 export interface TrustedContact {
   id?: string;
@@ -62,15 +61,11 @@ export interface TrustedContact {
   email?: string;
 }
 
-// ── Heatmap data ────────────────────────────────────────────────────────────
-
 export interface HeatmapPoint {
   latitude: number;
   longitude: number;
-  weight: number; // 0‒1
+  weight: number;
 }
-
-// ── API response wrappers ───────────────────────────────────────────────────
 
 export interface ApiError {
   message: string;

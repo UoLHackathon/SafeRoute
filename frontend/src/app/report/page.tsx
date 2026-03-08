@@ -80,7 +80,6 @@ export default function ReportPage() {
   return (
     <div className="min-h-screen bg-gray-950 p-6">
       <div className="max-w-lg mx-auto">
-        {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <Link
             href="/"
@@ -95,7 +94,6 @@ export default function ReportPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Location */}
           <div>
             <label className="block text-sm font-medium text-white/70 mb-2">
               Location
@@ -116,7 +114,6 @@ export default function ReportPage() {
             )}
           </div>
 
-          {/* Incident type */}
           <div>
             <label className="block text-sm font-medium text-white/70 mb-2">
               Type of Incident
@@ -140,7 +137,6 @@ export default function ReportPage() {
             </div>
           </div>
 
-          {/* Description */}
           <div>
             <label className="block text-sm font-medium text-white/70 mb-2">
               Description <span className="text-white/30">(optional)</span>
