@@ -12,16 +12,16 @@ export default function RiskLegend({ visible, onToggle }: RiskLegendProps) {
         onClick={onToggle}
         className={`px-3 py-2 rounded-xl text-xs font-medium border shadow-lg backdrop-blur-md transition-colors ${
           visible
-            ? "bg-white/15 border-white/30 text-white"
-            : "bg-gray-900/90 border-white/10 text-white/60 hover:text-white"
+            ? "bg-blue-50 border-blue-200 text-blue-600"
+            : "bg-white/90 border-gray-200 text-gray-500 hover:text-gray-700"
         }`}
       >
         {visible ? "Hide" : "Show"} Risk Heatmap
       </button>
 
       {visible && (
-        <div className="mt-2 bg-gray-900/95 backdrop-blur-md rounded-xl border border-white/10 shadow-2xl p-3 w-48">
-          <h3 className="text-xs font-semibold text-white/80 uppercase tracking-wider mb-2">
+        <div className="mt-2 bg-white/95 backdrop-blur-md rounded-xl border border-gray-200 shadow-lg p-3 w-48">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
             Risk Level
           </h3>
           <div className="space-y-1.5">
@@ -31,10 +31,8 @@ export default function RiskLegend({ visible, onToggle }: RiskLegendProps) {
               { color: "bg-red-500", label: "Higher Risk" },
             ].map((item) => (
               <div key={item.label} className="flex items-center gap-2">
-                <span
-                  className={`w-4 h-2.5 rounded-sm ${item.color}`}
-                />
-                <span className="text-xs text-white/60">{item.label}</span>
+                <span className={`w-4 h-2.5 rounded-sm ${item.color}`} />
+                <span className="text-xs text-gray-600">{item.label}</span>
               </div>
             ))}
           </div>

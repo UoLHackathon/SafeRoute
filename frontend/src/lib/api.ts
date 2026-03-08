@@ -52,7 +52,7 @@ export async function fetchAllRoutes(
 }
 
 export function fetchSafeStops(routeId: string): Promise<SafeStop[]> {
-  return request<SafeStop[]>(`/safe-stops?routeId=${encodeURIComponent(routeId)}`);
+  return request<SafeStop[]>(`/api/safe-stops`);
 }
 
 export function submitReport(
@@ -138,11 +138,12 @@ export function fetchHeatmapData(
   return request<HeatmapPoint[]>(`/heatmap?${q}`);
 }
 
-export function fetchAllSafeStops(
+export async function fetchAllSafeStops(
   category?: string
 ): Promise<SafeStop[]> {
-  const q = category ? `?category=${encodeURIComponent(category)}` : "";
-  return request<SafeStop[]>(`/safe-stops/all${q}`);
+  const all = await request<SafeStop[]>(`/api/safe-stops`);
+  if (!category) return all;
+  return all.filter((s) => s.category === category);
 }
 
 export function fetchAdminIncidents(): Promise<IncidentReport[]> {

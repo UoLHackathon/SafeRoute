@@ -5,115 +5,96 @@ import Link from "next/link";
 import { fetchAllSafeStops } from "@/lib/api";
 import type { SafeStop, SafeStopCategory } from "@/types";
 
-const CATEGORIES: {
-  id: SafeStopCategory | "all";
+const SAFE_STOP_ITEMS: {
+  id: SafeStopCategory;
   label: string;
-  icon: string;
 }[] = [
-  { id: "all", label: "All", icon: "📍" },
-  { id: "pharmacy", label: "Pharmacies", icon: "💊" },
-  { id: "hospital", label: "Hospitals", icon: "🏥" },
-  { id: "police", label: "Police", icon: "🚔" },
-  { id: "late_open_shop", label: "Late‑Night Shops", icon: "🏪" },
+  { id: "pharmacy", label: "Nearby Pharmacies" },
+  { id: "late_open_shop", label: "Nearby Stations" },
+  { id: "hospital", label: "Nearby Hospitals" },
+  { id: "police", label: "Nearby Police / help" },
 ];
 
-const CATEGORY_ICONS: Record<SafeStopCategory, string> = {
-  pharmacy: "💊",
-  hospital: "🏥",
-  police: "🚔",
-  late_open_shop: "🏪",
-};
-
 export default function SafeStopsPage() {
-  const [category, setCategory] = useState<SafeStopCategory | "all">("all");
+  const [selected, setSelected] = useState<SafeStopCategory | null>(null);
   const [stops, setStops] = useState<SafeStop[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    if (!selected) return;
     setLoading(true);
     setError("");
-    fetchAllSafeStops(category === "all" ? undefined : category)
+    fetchAllSafeStops(selected)
       .then(setStops)
       .catch(() => setError("Failed to load safe stops"))
       .finally(() => setLoading(false));
-  }, [category]);
+  }, [selected]);
 
   return (
-    <div className="min-h-screen bg-gray-950 pb-24">
+    <div className="min-h-screen bg-white pb-24">
       <div className="px-6 pt-14 pb-4">
         <div className="max-w-lg mx-auto">
-          <div className="flex items-center gap-3 mb-1">
-            <Link
-              href="/"
-              className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white/60 hover:text-white transition-colors"
-            >
-              ←
-            </Link>
-            <div>
-              <h1 className="text-xl font-semibold text-white">Nearby Safe Stops</h1>
-              <p className="text-sm text-white/40">Find help & safety nearby</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="px-6 mb-4">
-        <div className="max-w-lg mx-auto flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setCategory(cat.id)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium whitespace-nowrap transition-colors border ${
-                category === cat.id
-                  ? "bg-blue-600/20 border-blue-500/50 text-blue-300"
-                  : "bg-white/5 border-white/10 text-white/50 hover:text-white/70"
-              }`}
-            >
-              <span>{cat.icon}</span>
-              {cat.label}
-            </button>
-          ))}
+          <h1 className="text-2xl font-bold text-gray-900">Safe Stops</h1>
         </div>
       </div>
 
       <div className="px-6">
         <div className="max-w-lg mx-auto">
-          {loading ? (
-            <div className="text-center py-12 text-white/30 text-sm">Loading…</div>
-          ) : error ? (
-            <div className="text-center py-12 text-red-400 text-sm">{error}</div>
-          ) : stops.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-3xl mb-2">🔍</p>
-              <p className="text-sm text-white/40">No safe stops found in this category.</p>
+          {!selected ? (
+            <div className="divide-y divide-gray-100">
+              {SAFE_STOP_ITEMS.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setSelected(item.id)}
+                  className="w-full flex items-center justify-between py-4 text-left hover:bg-gray-50 transition-colors"
+                >
+                  <span className="text-base text-gray-900">{item.label}</span>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 18 15 12 9 6" />
+                  </svg>
+                </button>
+              ))}
             </div>
           ) : (
-            <div className="space-y-2">
-              <p className="text-xs text-white/30 mb-3">
-                {stops.length} result{stops.length !== 1 ? "s" : ""}
-              </p>
-              {stops.map((stop) => (
-                <div
-                  key={stop.id}
-                  className="bg-gray-900 rounded-2xl border border-white/10 p-4 flex items-start gap-4"
-                >
-                  <div className="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-xl shrink-0">
-                    {CATEGORY_ICONS[stop.category]}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">
-                      {stop.name}
-                    </p>
-                    <p className="text-xs text-white/40 capitalize mt-0.5">
-                      {stop.category.replace(/_/g, " ")}
-                    </p>
-                    <p className="text-xs text-white/20 mt-1">
-                      {stop.latitude.toFixed(4)}, {stop.longitude.toFixed(4)}
-                    </p>
-                  </div>
+            <div>
+              <button
+                onClick={() => { setSelected(null); setStops([]); }}
+                className="text-sm text-blue-500 hover:text-blue-600 mb-4 inline-block"
+              >
+                ← Back to categories
+              </button>
+
+              {loading ? (
+                <div className="text-center py-12 text-gray-400 text-sm">Loading…</div>
+              ) : error ? (
+                <div className="text-center py-12 text-red-500 text-sm">{error}</div>
+              ) : stops.length === 0 ? (
+                <div className="text-center py-12">
+                  <p className="text-sm text-gray-400">No safe stops found.</p>
                 </div>
-              ))}
+              ) : (
+                <div className="space-y-2">
+                  {stops.map((stop) => (
+                    <div
+                      key={stop.id}
+                      className="bg-gray-50 rounded-xl border border-gray-200 p-4 flex items-center justify-between"
+                    >
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">
+                          {stop.name}
+                        </p>
+                        <p className="text-xs text-gray-400 capitalize mt-0.5">
+                          {stop.category.replace(/_/g, " ")}
+                        </p>
+                      </div>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
         </div>

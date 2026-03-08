@@ -57,54 +57,54 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 p-6">
+    <div className="min-h-screen bg-white p-6 pb-24">
       <div className="max-w-lg mx-auto">
         <div className="flex items-center gap-3 mb-8">
           <Link
             href="/"
-            className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white/60 hover:text-white transition-colors"
+            className="text-gray-400 hover:text-gray-600 transition-colors"
           >
             ←
           </Link>
           <div>
-            <h1 className="text-xl font-semibold text-white">Settings</h1>
-            <p className="text-sm text-white/40">Manage trusted contacts</p>
+            <h1 className="text-xl font-bold text-gray-900">Settings</h1>
+            <p className="text-sm text-gray-400">Manage trusted contacts</p>
           </div>
         </div>
 
-        <div className="bg-gray-900 rounded-2xl border border-white/10 overflow-hidden mb-6">
-          <div className="px-5 py-3 border-b border-white/10">
-            <h2 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
+        <div className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden mb-6">
+          <div className="px-5 py-3 border-b border-gray-200">
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
               Trusted Contacts
             </h2>
-            <p className="text-xs text-white/40 mt-0.5">
+            <p className="text-xs text-gray-400 mt-0.5">
               These people will be alerted if you don&apos;t check in during a walk.
             </p>
           </div>
 
           {loading ? (
-            <div className="p-6 text-center text-sm text-white/30">Loading…</div>
+            <div className="p-6 text-center text-sm text-gray-400">Loading…</div>
           ) : contacts.length === 0 ? (
-            <div className="p-6 text-center text-sm text-white/30">
+            <div className="p-6 text-center text-sm text-gray-400">
               No trusted contacts yet. Add one below.
             </div>
           ) : (
-            <ul className="divide-y divide-white/5">
+            <ul className="divide-y divide-gray-100">
               {contacts.map((contact) => (
                 <li
                   key={contact.id}
                   className="flex items-center justify-between px-5 py-3"
                 >
                   <div>
-                    <p className="text-sm text-white font-medium">{contact.name}</p>
-                    <p className="text-xs text-white/40">{contact.phone}</p>
+                    <p className="text-sm text-gray-900 font-medium">{contact.name}</p>
+                    <p className="text-xs text-gray-400">{contact.phone}</p>
                     {contact.email && (
-                      <p className="text-xs text-white/30">{contact.email}</p>
+                      <p className="text-xs text-gray-300">{contact.email}</p>
                     )}
                   </div>
                   <button
                     onClick={() => contact.id && handleDelete(contact.id)}
-                    className="text-xs text-red-400 hover:text-red-300 transition-colors"
+                    className="text-xs text-red-500 hover:text-red-600 transition-colors"
                   >
                     Remove
                   </button>
@@ -114,16 +114,16 @@ export default function SettingsPage() {
           )}
         </div>
 
-        <div className="bg-gray-900 rounded-2xl border border-white/10 overflow-hidden">
-          <div className="px-5 py-3 border-b border-white/10">
-            <h2 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
+        <div className="bg-gray-50 rounded-2xl border border-gray-200 overflow-hidden">
+          <div className="px-5 py-3 border-b border-gray-200">
+            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">
               Add Contact
             </h2>
           </div>
 
           <form onSubmit={handleAdd} className="p-5 space-y-4">
             <div>
-              <label className="block text-xs font-medium text-white/50 mb-1">
+              <label className="block text-xs font-medium text-gray-500 mb-1">
                 Name *
               </label>
               <input
@@ -131,13 +131,13 @@ export default function SettingsPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 required
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Jane Doe"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-white/50 mb-1">
+              <label className="block text-xs font-medium text-gray-500 mb-1">
                 Phone *
               </label>
               <input
@@ -145,26 +145,26 @@ export default function SettingsPage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 required
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="+1 555 123 4567"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-white/50 mb-1">
-                Email <span className="text-white/20">(optional)</span>
+              <label className="block text-xs font-medium text-gray-500 mb-1">
+                Email <span className="text-gray-300">(optional)</span>
               </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white placeholder-white/30 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="jane@example.com"
               />
             </div>
 
             {error && (
-              <p className="text-sm text-red-400 bg-red-400/10 rounded-lg p-3">
+              <p className="text-sm text-red-500 bg-red-50 rounded-lg p-3">
                 {error}
               </p>
             )}
@@ -172,7 +172,7 @@ export default function SettingsPage() {
             <button
               type="submit"
               disabled={submitting || !name.trim() || !phone.trim()}
-              className="w-full py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors"
+              className="w-full py-3 bg-blue-500 hover:bg-blue-600 disabled:opacity-40 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors"
             >
               {submitting ? "Adding…" : "Add Contact"}
             </button>

@@ -10,7 +10,7 @@ export default function RoutesPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gray-950 flex items-center justify-center text-white/50 text-sm">
+        <div className="min-h-screen bg-white flex items-center justify-center text-gray-400 text-sm">
           Loading route options…
         </div>
       }
@@ -20,23 +20,17 @@ export default function RoutesPage() {
   );
 }
 
-const ROUTE_META: Record<RouteMode, { icon: string; color: string; tagColor: string }> = {
-  FASTEST: {
-    icon: "⚡",
-    color: "border-blue-500/40 bg-blue-500/5",
-    tagColor: "bg-blue-500/20 text-blue-300",
-  },
-  LOWER_RISK: {
-    icon: "🛡️",
-    color: "border-green-500/40 bg-green-500/5",
-    tagColor: "bg-green-500/20 text-green-300",
-  },
-  COMFORT: {
-    icon: "🌙",
-    color: "border-yellow-500/40 bg-yellow-500/5",
-    tagColor: "bg-yellow-500/20 text-yellow-300",
-  },
+const ROUTE_LABELS: Record<RouteMode, string> = {
+  FASTEST: "Fastest Route",
+  LOWER_RISK: "Lower Risk Route",
+  COMFORT: "Comfort Route",
 };
+
+function riskLabel(score: number) {
+  if (score < 30) return { label: "Low", color: "text-green-600" };
+  if (score < 60) return { label: "Medium", color: "text-yellow-600" };
+  return { label: "High", color: "text-red-600" };
+}
 
 function RoutesContent() {
   const params = useSearchParams();
@@ -45,6 +39,7 @@ function RoutesContent() {
   const destLng = Number(params.get("destLng")) || 0;
 
   const [routes, setRoutes] = useState<RouteOption[]>([]);
+  const [selected, setSelected] = useState<RouteMode>("LOWER_RISK");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
@@ -67,117 +62,83 @@ function RoutesContent() {
       .finally(() => setLoading(false));
   }, [userLocation, destLat, destLng]);
 
-  function riskLabel(score: number) {
-    if (score < 30) return { label: "Low", color: "text-green-400" };
-    if (score < 60) return { label: "Medium", color: "text-yellow-400" };
-    return { label: "High", color: "text-red-400" };
-  }
+  const selectedRoute = routes.find((r) => r.mode === selected);
+  const durationMin = selectedRoute ? Math.round(selectedRoute.durationSeconds / 60) : 10;
 
   return (
-    <div className="min-h-screen bg-gray-950 pb-24">
-      <div className="px-6 pt-14 pb-6">
+    <div className="min-h-screen bg-white pb-24">
+      <div className="px-6 pt-14 pb-4">
         <div className="max-w-lg mx-auto">
-          <div className="flex items-center gap-3 mb-1">
-            <Link
-              href="/"
-              className="w-10 h-10 flex items-center justify-center rounded-xl bg-white/5 border border-white/10 text-white/60 hover:text-white transition-colors"
-            >
-              ←
-            </Link>
-            <div>
-              <h1 className="text-xl font-semibold text-white">Route Options</h1>
-              {dest && (
-                <p className="text-sm text-white/40 truncate">To: {dest}</p>
-              )}
-            </div>
-          </div>
+          <Link href="/" className="text-gray-400 hover:text-gray-600 text-sm mb-4 inline-block">
+            ← Back
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900">Route Options</h1>
+          {dest && (
+            <p className="text-sm text-gray-400 mt-1 truncate">To: {dest}</p>
+          )}
         </div>
       </div>
 
       <div className="px-6">
         <div className="max-w-lg mx-auto">
           {loading ? (
-            <div className="text-center py-16 text-white/30 text-sm">
+            <div className="text-center py-16 text-gray-400 text-sm">
               Comparing routes…
             </div>
           ) : error ? (
-            <div className="text-center py-16 text-red-400 text-sm">{error}</div>
+            <div className="text-center py-16 text-red-500 text-sm">{error}</div>
           ) : routes.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-3xl mb-2">🛣️</p>
-              <p className="text-sm text-white/40 mb-4">No routes available.</p>
-              <Link
-                href="/"
-                className="text-sm text-blue-400 hover:text-blue-300"
-              >
+              <p className="text-sm text-gray-400 mb-4">No routes available.</p>
+              <Link href="/" className="text-sm text-blue-500 hover:text-blue-600">
                 ← Enter a destination
               </Link>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {routes.map((route) => {
-                const meta = ROUTE_META[route.mode];
                 const risk = riskLabel(route.riskScore);
-                const durationMin = Math.round(route.durationSeconds / 60);
+                const mins = Math.round(route.durationSeconds / 60);
+                const isSelected = selected === route.mode;
                 return (
-                  <div
+                  <button
                     key={route.mode}
-                    className={`rounded-2xl border p-5 ${meta.color}`}
+                    onClick={() => setSelected(route.mode)}
+                    className={`w-full text-left rounded-2xl border-2 p-4 transition-colors ${
+                      isSelected
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 bg-white hover:border-gray-300"
+                    }`}
                   >
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl">{meta.icon}</span>
-                        <h2 className="text-base font-semibold text-white">
-                          {route.mode === "LOWER_RISK"
-                            ? "Lower Risk"
-                            : route.mode.charAt(0) + route.mode.slice(1).toLowerCase()}
-                        </h2>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                        isSelected ? "border-blue-500" : "border-gray-300"
+                      }`}>
+                        {isSelected && <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />}
                       </div>
-                      <span className={`text-xs font-medium px-2.5 py-1 rounded-full ${meta.tagColor}`}>
-                        {durationMin} min
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3 mb-4">
-                      <div className="bg-white/5 rounded-xl px-3 py-2">
-                        <p className="text-xs text-white/40">Duration</p>
-                        <p className="text-sm font-medium text-white">
-                          {durationMin} min
-                        </p>
-                      </div>
-                      <div className="bg-white/5 rounded-xl px-3 py-2">
-                        <p className="text-xs text-white/40">Risk Level</p>
-                        <p className={`text-sm font-medium ${risk.color}`}>
-                          {risk.label} ({route.riskScore.toFixed(0)}%)
-                        </p>
-                      </div>
-                      <div className="bg-white/5 rounded-xl px-3 py-2">
-                        <p className="text-xs text-white/40">Confidence</p>
-                        <p className="text-sm font-medium text-white/70">
-                          {route.confidence}
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <h2 className="text-base font-semibold text-gray-900">
+                            {ROUTE_LABELS[route.mode]}
+                          </h2>
+                          <span className="text-sm font-medium text-gray-500">{mins} min</span>
+                        </div>
+                        <p className={`text-sm mt-0.5 ${risk.color}`}>
+                          Risk: {risk.label}
                         </p>
                       </div>
                     </div>
-
-                    {route.reasons.length > 0 && (
-                      <div className="mb-4 space-y-1">
-                        {route.reasons.map((reason, i) => (
-                          <p key={i} className="text-xs text-white/40 pl-1">
-                            • {reason}
-                          </p>
-                        ))}
-                      </div>
-                    )}
-
-                    <Link
-                      href={`/walk?route=${route.mode}&duration=${durationMin}`}
-                      className="block w-full text-center py-3 bg-white/10 hover:bg-white/15 rounded-xl text-sm font-medium text-white transition-colors"
-                    >
-                      Start Walk →
-                    </Link>
-                  </div>
+                  </button>
                 );
               })}
+
+              <Link
+                href={`/walk?route=${selected}&duration=${durationMin}`}
+                className="block w-full text-center py-3.5 bg-blue-500 hover:bg-blue-600 text-white font-semibold rounded-xl transition-colors mt-6"
+              >
+                Select
+              </Link>
             </div>
           )}
         </div>

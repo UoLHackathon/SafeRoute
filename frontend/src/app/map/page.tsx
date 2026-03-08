@@ -14,7 +14,7 @@ export default function MapPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-gray-950 flex items-center justify-center text-white/50 text-sm">
+        <div className="min-h-screen bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
           Loading map…
         </div>
       }
@@ -98,42 +98,46 @@ function MapContent() {
     : null;
   const riskColor = currentRoute
     ? currentRoute.riskScore < 30
-      ? "text-green-400"
+      ? "text-green-600"
       : currentRoute.riskScore < 60
-        ? "text-yellow-400"
-        : "text-red-400"
+        ? "text-yellow-600"
+        : "text-red-600"
     : "";
 
   return (
-    <div className="relative w-screen h-screen overflow-hidden bg-black">
-      <div className="absolute inset-0 bg-gray-950 flex items-center justify-center text-white/20 text-sm">
+    <div className="relative w-screen h-screen overflow-hidden bg-gray-100">
+      <div className="absolute inset-0 bg-gray-100 flex items-center justify-center text-gray-400 text-sm">
         <div className="text-center space-y-2">
-          <p className="text-4xl">🗺️</p>
-          <p>Map area — connect to backend map tile service</p>
+          <svg className="mx-auto" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+            <line x1="8" y1="2" x2="8" y2="18" />
+            <line x1="16" y1="6" x2="16" y2="22" />
+          </svg>
+          <p>Map area</p>
           {userLocation && (
-            <p className="text-xs text-white/10">
-              Location: {userLocation[0].toFixed(4)}, {userLocation[1].toFixed(4)}
+            <p className="text-xs text-gray-300">
+              {userLocation[0].toFixed(4)}, {userLocation[1].toFixed(4)}
             </p>
           )}
         </div>
       </div>
 
       <div className="absolute top-4 left-4 right-4 z-30">
-        <div className="bg-gray-900/95 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl px-5 py-4">
+        <div className="bg-white/95 backdrop-blur-md rounded-2xl border border-gray-200 shadow-lg px-5 py-4">
           <div className="flex items-center justify-between">
-            <Link href="/" className="text-white/50 hover:text-white text-sm">
+            <Link href="/" className="text-gray-400 hover:text-gray-600 text-sm">
               ← Back
             </Link>
             {destination && (
-              <span className="text-xs text-white/40 truncate ml-4 flex-1 text-right">
+              <span className="text-xs text-gray-500 truncate ml-4 flex-1 text-right">
                 📍 {destination}
               </span>
             )}
           </div>
 
           {currentRoute && riskLevel && (
-            <div className="mt-3 flex items-center justify-between bg-white/5 rounded-xl px-4 py-2.5">
-              <span className="text-xs text-white/50">Route risk</span>
+            <div className="mt-3 flex items-center justify-between bg-gray-50 rounded-xl px-4 py-2.5">
+              <span className="text-xs text-gray-500">Route risk</span>
               <span className={`text-sm font-semibold ${riskColor}`}>
                 {riskLevel} ({currentRoute.riskScore.toFixed(0)}%)
               </span>
@@ -141,14 +145,14 @@ function MapContent() {
           )}
 
           {loading && (
-            <p className="mt-2 text-xs text-white/40 text-center">Finding routes…</p>
+            <p className="mt-2 text-xs text-gray-400 text-center">Finding routes…</p>
           )}
         </div>
       </div>
 
       {incidents.length > 0 && (
         <div className="absolute top-36 left-4 z-20">
-          <div className="bg-gray-900/90 backdrop-blur-md rounded-xl border border-white/10 px-3 py-2 text-xs text-white/50">
+          <div className="bg-white/90 backdrop-blur-md rounded-xl border border-gray-200 px-3 py-2 text-xs text-gray-500">
             ⚠️ {incidents.length} incident{incidents.length !== 1 ? "s" : ""} in area
           </div>
         </div>
@@ -157,7 +161,7 @@ function MapContent() {
       {!showReportForm && (
         <button
           onClick={() => setShowReportForm(true)}
-          className="absolute bottom-44 right-4 z-30 px-4 py-3 bg-red-600 hover:bg-red-500 rounded-2xl flex items-center gap-2 text-white text-sm font-semibold shadow-lg shadow-red-600/30 transition-colors"
+          className="absolute bottom-44 right-4 z-30 px-4 py-3 bg-red-500 hover:bg-red-600 rounded-2xl flex items-center gap-2 text-white text-sm font-semibold shadow-lg transition-colors"
         >
           🚨 I feel unsafe
         </button>
