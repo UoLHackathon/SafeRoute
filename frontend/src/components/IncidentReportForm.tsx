@@ -5,7 +5,6 @@ import type { IncidentType } from "@/types";
 import { submitReport } from "@/lib/api";
 
 interface IncidentReportFormProps {
-  /** Pre-filled coordinates from map click */
   latitude: number | null;
   longitude: number | null;
   onClose: () => void;
@@ -56,7 +55,6 @@ export default function IncidentReportForm({
 
   return (
     <div className="absolute top-4 right-4 z-30 w-80 bg-gray-900/95 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
-      {/* Header */}
       <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
         <h2 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
           Report Incident
@@ -70,7 +68,6 @@ export default function IncidentReportForm({
       </div>
 
       <form onSubmit={handleSubmit} className="p-4 space-y-4">
-        {/* Location hint */}
         {!canSubmit && (
           <p className="text-xs text-yellow-400 bg-yellow-400/10 rounded-lg p-2">
             Tap on the map to select incident location
@@ -82,7 +79,6 @@ export default function IncidentReportForm({
           </p>
         )}
 
-        {/* Type selector */}
         <div className="grid grid-cols-2 gap-2">
           {INCIDENT_TYPES.map((t) => (
             <button
@@ -101,7 +97,6 @@ export default function IncidentReportForm({
           ))}
         </div>
 
-        {/* Description */}
         <textarea
           value={description}
           onChange={(e) => setDescription(e.target.value)}

@@ -1,4 +1,5 @@
 import type {
+  RouteMode,
   RouteOption,
   SafeStop,
   WalkSession,
@@ -8,8 +9,6 @@ import type {
 } from "@/types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_BASE ?? "http://localhost:8080";
-
-// ── Generic fetch helper with error handling ────────────────────────────────
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
@@ -25,24 +24,36 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
-// ── Routes ──────────────────────────────────────────────────────────────────
-
-export function fetchRoutes(
-  start: [number, number],
-  end: [number, number]
-): Promise<RouteOption[]> {
-  return request<RouteOption[]>(
-    `/routes?start=${start[0]},${start[1]}&end=${end[0]},${end[1]}`
-  );
+export function calculateRoute(
+  startLat: number,
+  startLong: number,
+  destLat: number,
+  destLong: number,
+  mode: RouteMode
+): Promise<RouteOption> {
+  return request<RouteOption>("/api/routes/calculate", {
+    method: "POST",
+    body: JSON.stringify({ startLat, startLong, destLat, destLong, mode }),
+  });
 }
 
-// ── Safe stops ──────────────────────────────────────────────────────────────
+export async function fetchAllRoutes(
+  startLat: number,
+  startLong: number,
+  destLat: number,
+  destLong: number
+): Promise<RouteOption[]> {
+  const modes: RouteMode[] = ["FASTEST", "LOWER_RISK", "COMFORT"];
+  return Promise.all(
+    modes.map((mode) =>
+      calculateRoute(startLat, startLong, destLat, destLong, mode)
+    )
+  );
+}
 
 export function fetchSafeStops(routeId: string): Promise<SafeStop[]> {
   return request<SafeStop[]>(`/safe-stops?routeId=${encodeURIComponent(routeId)}`);
 }
-
-// ── Incident reports ────────────────────────────────────────────────────────
 
 export function submitReport(
   report: Omit<IncidentReport, "id">
@@ -61,8 +72,6 @@ export function fetchReports(
     : "";
   return request<IncidentReport[]>(`/reports${q}`);
 }
-
-// ── Walk session ────────────────────────────────────────────────────────────
 
 export function startWalkSession(body: {
   routeType: string;
@@ -87,8 +96,6 @@ export function endWalkSession(sessionId: string): Promise<{ ok: boolean }> {
   });
 }
 
-// ── Trusted contacts ────────────────────────────────────────────────────────
-
 export function fetchContacts(): Promise<TrustedContact[]> {
   return request<TrustedContact[]>("/contacts");
 }
@@ -108,26 +115,44 @@ export function deleteContact(contactId: string): Promise<{ ok: boolean }> {
   });
 }
 
-// ── Geocode (via backend) ────────────────────────────────────────────────────
-
 export async function geocode(
   query: string
 ): Promise<[number, number] | null> {
   try {
-    const data = await request<{ lat: number; lng: number }>(
-      `/geocode?query=${encodeURIComponent(query)}`
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1`,
+      { headers: { "User-Agent": "SafeRouteAI/1.0" } }
     );
-    return [data.lat, data.lng];
+    const data = await res.json();
+    if (!Array.isArray(data) || data.length === 0) return null;
+    return [parseFloat(data[0].lat), parseFloat(data[0].lon)];
   } catch {
     return null;
   }
 }
-
-// ── Heatmap data ────────────────────────────────────────────────────────────
 
 export function fetchHeatmapData(
   bounds: { north: number; south: number; east: number; west: number }
 ): Promise<HeatmapPoint[]> {
   const q = `north=${bounds.north}&south=${bounds.south}&east=${bounds.east}&west=${bounds.west}`;
   return request<HeatmapPoint[]>(`/heatmap?${q}`);
+}
+
+export function fetchAllSafeStops(
+  category?: string
+): Promise<SafeStop[]> {
+  const q = category ? `?category=${encodeURIComponent(category)}` : "";
+  return request<SafeStop[]>(`/safe-stops/all${q}`);
+}
+
+export function fetchAdminIncidents(): Promise<IncidentReport[]> {
+  return request<IncidentReport[]>("/admin/incidents");
+}
+
+export function fetchAdminSafeStops(): Promise<SafeStop[]> {
+  return request<SafeStop[]>("/admin/safe-stops");
+}
+
+export function seedData(): Promise<{ message: string }> {
+  return request<{ message: string }>("/admin/seed", { method: "POST" });
 }

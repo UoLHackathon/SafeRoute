@@ -3,8 +3,13 @@
 import { Suspense, useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { startWalkSession, checkIn, endWalkSession } from "@/lib/api";
-import type { WalkSession } from "@/types";
+import type { WalkSession, RouteMode } from "@/types";
+
+const MODE_DISPLAY: Record<string, string> = {
+  FASTEST: "Fastest",
+  LOWER_RISK: "Lower Risk",
+  COMFORT: "Comfort",
+};
 
 export default function WalkPage() {
   return (
@@ -22,20 +27,19 @@ export default function WalkPage() {
 
 function WalkContent() {
   const params = useSearchParams();
-  const routeType = params.get("route") ?? "fastest";
+  const routeMode = params.get("route") ?? "FASTEST";
   const durationMin = Number(params.get("duration")) || 10;
 
   const [session, setSession] = useState<WalkSession | null>(null);
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState("");
   const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
-  const [elapsed, setElapsed] = useState(0); // seconds
+  const [elapsed, setElapsed] = useState(0);
   const [checkingIn, setCheckingIn] = useState(false);
   const [ended, setEnded] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const watchRef = useRef<number | null>(null);
 
-  // ── Track user location continuously ───────────────────────────────────
   useEffect(() => {
     watchRef.current = navigator.geolocation.watchPosition(
       (pos) => setUserLocation([pos.coords.longitude, pos.coords.latitude]),
@@ -47,7 +51,6 @@ function WalkContent() {
     };
   }, []);
 
-  // ── Timer ──────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!session?.isActive) return;
 
@@ -63,16 +66,17 @@ function WalkContent() {
   const remainingSeconds = Math.max(durationMin * 60 - elapsed, 0);
   const remainingDisplay = `${Math.floor(remainingSeconds / 60)}:${String(remainingSeconds % 60).padStart(2, "0")}`;
 
-  // ── Start session ─────────────────────────────────────────────────────
   async function handleStart() {
     setStarting(true);
     setError("");
     try {
-      const s = await startWalkSession({
-        routeType,
-        expectedMinutes: durationMin,
-        contactId: "default", // Settings page would set this
-      });
+      const s: WalkSession = {
+        id: crypto.randomUUID(),
+        routeMode: routeMode as RouteMode,
+        startTime: new Date().toISOString(),
+        expectedArrival: new Date(Date.now() + durationMin * 60 * 1000).toISOString(),
+        isActive: true,
+      };
       setSession(s);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not start walk session");
@@ -81,32 +85,20 @@ function WalkContent() {
     }
   }
 
-  // ── Check in ──────────────────────────────────────────────────────────
   const handleCheckIn = useCallback(async () => {
     if (!session) return;
     setCheckingIn(true);
-    try {
-      await checkIn(session.id);
-    } catch {
-      // Silent — user can retry
-    } finally {
-      setCheckingIn(false);
-    }
+    setSession((prev) => prev ? { ...prev, lastCheckIn: new Date().toISOString() } : prev);
+    setCheckingIn(false);
   }, [session]);
 
-  // ── End walk ──────────────────────────────────────────────────────────
   async function handleEnd() {
     if (!session) return;
-    try {
-      await endWalkSession(session.id);
-      setEnded(true);
-      if (timerRef.current) clearInterval(timerRef.current);
-    } catch {
-      // Silent
-    }
+    setSession((prev) => prev ? { ...prev, isActive: false } : prev);
+    setEnded(true);
+    if (timerRef.current) clearInterval(timerRef.current);
   }
 
-  // ── Arrived screen ────────────────────────────────────────────────────
   if (ended) {
     return (
       <div className="min-h-screen bg-gray-950 flex items-center justify-center p-6">
@@ -129,10 +121,8 @@ function WalkContent() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black">
-      {/* Map placeholder — map rendering is handled by the backend */}
       <div className="absolute inset-0 bg-gray-950" />
 
-      {/* Top bar */}
       <div className="absolute top-4 left-4 right-4 z-30">
         <div className="bg-gray-900/95 backdrop-blur-md rounded-2xl border border-white/10 shadow-2xl px-5 py-4">
           <div className="flex items-center justify-between mb-2">
@@ -140,12 +130,11 @@ function WalkContent() {
               ← Exit Walk
             </Link>
             <span className="text-xs text-white/40 uppercase tracking-wider font-medium">
-              {routeType.replace(/([A-Z])/g, " $1")} Route
+              {MODE_DISPLAY[routeMode] ?? routeMode} Route
             </span>
           </div>
 
           {!session ? (
-            /* ── Not started yet ─────────────────────────────────────── */
             <div className="text-center py-4">
               <p className="text-sm text-white/60 mb-4">
                 Estimated walk: <span className="text-white font-medium">{durationMin} min</span>
@@ -162,9 +151,7 @@ function WalkContent() {
               </button>
             </div>
           ) : (
-            /* ── Active walk ─────────────────────────────────────────── */
             <div>
-              {/* Timer */}
               <div className="text-center mb-4">
                 <p className="text-xs text-white/40 mb-1">Time Remaining</p>
                 <p className="text-4xl font-mono font-bold text-white">
@@ -177,7 +164,6 @@ function WalkContent() {
                 )}
               </div>
 
-              {/* Action buttons */}
               <div className="flex gap-3">
                 <button
                   onClick={handleCheckIn}

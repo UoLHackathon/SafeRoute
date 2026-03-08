@@ -9,7 +9,6 @@ export default function SettingsPage() {
   const [contacts, setContacts] = useState<TrustedContact[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Form
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
@@ -25,7 +24,6 @@ export default function SettingsPage() {
       const data = await fetchContacts();
       setContacts(data);
     } catch {
-      // Backend may not be running — show empty state
     } finally {
       setLoading(false);
     }
@@ -55,14 +53,12 @@ export default function SettingsPage() {
       await deleteContact(id);
       setContacts((prev) => prev.filter((c) => c.id !== id));
     } catch {
-      // Silent
     }
   }
 
   return (
     <div className="min-h-screen bg-gray-950 p-6">
       <div className="max-w-lg mx-auto">
-        {/* Header */}
         <div className="flex items-center gap-3 mb-8">
           <Link
             href="/"
@@ -76,7 +72,6 @@ export default function SettingsPage() {
           </div>
         </div>
 
-        {/* ── Trusted contacts list ──────────────────────────────────────── */}
         <div className="bg-gray-900 rounded-2xl border border-white/10 overflow-hidden mb-6">
           <div className="px-5 py-3 border-b border-white/10">
             <h2 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
@@ -119,7 +114,6 @@ export default function SettingsPage() {
           )}
         </div>
 
-        {/* ── Add contact form ───────────────────────────────────────────── */}
         <div className="bg-gray-900 rounded-2xl border border-white/10 overflow-hidden">
           <div className="px-5 py-3 border-b border-white/10">
             <h2 className="text-sm font-semibold text-white/80 uppercase tracking-wider">
